@@ -1,0 +1,19 @@
+---
+# vars file for flexVPC
+
+
+aws_access_key: XXX
+aws_secret_key: XXX
+region: us-east-2
+vpc_name: vpc-1
+cidr: 10.0.0.0/16
+tenancy: default
+nat_gateway_subnet_name: public-1
+name:  public-1
+gateway: igw
+name: public-1
+gateway: nat
+subnet_items:
+  - { azone: 'us-east-2a', cidr: '10.0.1.0/24', ig: 'igw'}
+  - { azone: 'us-east-2a', cidr: '10.0.2.0/24', ig: 'nat'}
+  

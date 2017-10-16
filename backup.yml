@@ -1,0 +1,84 @@
+---
+# Creating a VPC with Public and Private subnet.
+  - name: Create vpc
+    hosts: local
+    connection: local
+    gather_facts: yes
+ 
+  vars:
+    aws_access_key: XXX
+    aws_secret_key: XXX
+    region: us-west-1
+    vpc_name: vpc-1
+    cidr: 10.0.0.0/16
+    tenancy: default
+    nat_gateway_subnet_name: public-1
+    subnets:
+    - public_subnet_az: us-west-1a 
+      public_subnet: 10.0.0.0/24
+      name:  public-1
+      gateway: igw
+    - private_subnet_az: us-west-1b
+      private_subnet: 10.0.1.0/24
+      name: public-1
+      gateway: nat
+
+  tasks:
+    - name: create VPC with public and private subnet
+      ec2_vpc_net:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        cidr_block: '{{ cidr }}'
+        name: "{{ vpc_name }}"
+        region: '{{ region }}'
+        state: present
+        tenancy: default
+      register: vpc
+
+    - name: Create Internet gateway for the created VPC
+      ec2_vpc_igw:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        state: present
+        vpc_id: "{{ vpc.vpc.id }}"
+      register: igw
+
+    - name: Create subnets
+      ec2_vpc_subnet:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        cidr: '{{ item. public_subnet }}'
+        az: '{{ item.public_subnet_az }}'
+        region: '{{ region }}'
+        state: present
+        tags:
+          Name: "{{ item.name }}"
+        vpc_id: "{{ vpc.vpc.id }}"
+      with_items: "{{ vpc.subnets }}"
+
+    - name: Get subnet id where NAT gateway is to be created
+      ec2_vpc_subnet_facts:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        filters:
+          vpc-id: "{{vpc.vpc.id}}"
+          "tag:Name": "{{vpc.nat_gateway_subnet_name}}"
+        region: "{{ region }}"
+      register: nat_gateway_subnet
+
+    - name: Fail if anything but 1 subnet is found in the facts call
+      fail:
+        msg: "Found {{nat_gateway_subnet.subnets|length}} subnets instead of 1 subnet"
+      when: 'nat_gateway_subnet.subnets|length != 1'
+
+    - name: Create NAT gateway
+      ec2_vpc_nat_gateway:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key}}"
+        if_exist_do_not_create: yes
+        region: "{{ region }}"
+        state: present
+        subnet_id: "{{nat_gateway_subnet.subnets[0].id}}"
+        wait: yes
+      register: nat_gateway

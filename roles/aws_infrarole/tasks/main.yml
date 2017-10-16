@@ -1,0 +1,52 @@
+---
+    - name: create VPC with public and private subnet
+      ec2_vpc_net:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        cidr_block: '{{ cidr }}'
+        name: "{{ vpc_name }}"
+        region: '{{ region }}'
+        state: present
+        tenancy: default
+      register: rVpc
+
+    - name: Create Internet gateway for the created VPC
+      ec2_vpc_igw:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        state: present
+        vpc_id: "{{ rVpc.vpc.id }}"
+      register: igw
+
+
+    - name: Create subnets
+      ec2_vpc_subnet:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        cidr: "{{ item.cidr }}"
+        az: "{{ item.azone }}"
+        region: "{{ region }}"
+        state: present
+        vpc_id: "{{ rVpc.vpc.id }}"
+      with_items: "{{ subnet_items }}"
+      register: my_subnets
+
+
+    - name: Create NAT gatewayi
+      ec2_vpc_nat_gateway:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key}}"
+        if_exist_do_not_create: yes
+        region: "{{ region }}"
+        state: present
+        subnet_id: "{{ item.subnet.id }}"
+        wait: yes
+      with_items: "{{ my_subnets.results }}"
+      register: nat_gateway_results
+
+     - name: debug mysubnets
+      debug:
+        var: my_subnets
+
+   

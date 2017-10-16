@@ -1,0 +1,9 @@
+---
+- hosts: local
+  connection: local
+  
+
+  roles:
+     - { role: aws_infrarole }
+     
+

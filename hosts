@@ -1,0 +1,8 @@
+[local]
+
+localhost
+
+[webservers]
+
+ip_address ansible_user=test
+

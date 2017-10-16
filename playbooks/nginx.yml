@@ -1,0 +1,17 @@
+---
+  - hosts: webservers
+    remote_user: reddy
+
+    vars:
+      http_port: 80
+
+
+    tasks:
+    - name: install nginx
+      yum: name=nginx state=present
+
+    - name: ensure nginx is running
+      service: name=nginx state=running
+
+    - name: wait for nginx to be running
+      wait_for: port= delay=3

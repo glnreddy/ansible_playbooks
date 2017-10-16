@@ -1,0 +1,13 @@
+---
+- name: Install EPEL
+  yum: name=epel-release
+
+- name: Upgrade device-mapper
+  yum: name=device-mapper state=latest
+
+- name: Install Docker
+  yum: name=docker-io
+
+- name: Start the Docker daemon
+  service: name=docker state=running enabled=yes
+

@@ -1,0 +1,27 @@
+---
+- name: system packages | install epel repo
+  become: true
+  yum:
+    name: epel-release
+    state: present
+
+- name: docker | Install docker python tools
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - python-devel
+  - python-pip
+  - PyYAML
+  - python-six
+  - python-requests
+
+- name: docker swarm | install python packages
+  become: true
+  pip:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - docker-py==1.9.0
+  - docker-compose==1.8.0

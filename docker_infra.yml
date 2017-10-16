@@ -1,0 +1,10 @@
+- hosts: all
+  become: true
+  remote_user: ec2-user
+  vars:
+    pip_install_packages:
+      - name: docker
+
+  roles:
+    - docker_install  
+    - Install_PythonDependencies
