@@ -4,6 +4,8 @@
 
     vars:
       http_port: 80
+    
+    user: reddy
 
 
     tasks:
