@@ -1,6 +1,6 @@
 ---
   - hosts: web
-    become: true
+    become: yes
 
     vars:
       http_port: 80
