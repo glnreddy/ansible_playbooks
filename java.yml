@@ -1,6 +1,7 @@
 ---
-- hosts: all
+- hosts: web
   become: true
+  user: reddy
   
     
   tasks:
