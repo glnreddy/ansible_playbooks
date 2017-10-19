@@ -1,0 +1,20 @@
+#! /usr/bin/python
+
+# Simple inventory script to be used by jenkins
+# HOST is set by a jenkins parameter
+
+from os import environ
+from json import dumps
+
+
+if environ.get('HOST'):
+    host = environ.get('HOST')
+else:
+    print "HOST environmet variable not set"
+    exit(1)
+
+inventory = { "web": { "hosts": [ HOST ] } } 
+
+
+
+print dumps(inventory)
